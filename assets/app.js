@@ -33,3 +33,7 @@ for(let i=0;i<140;i++)P.push(np(true));
 function np(a){return{x:Math.random()*cv.width,y:a?Math.random()*cv.height:cv.height+10,r:(Math.random()*2.2+.4)*devicePixelRatio,v:Math.random()*.9+.3,d:Math.random()*6.28,h:Math.random()<.8?30+Math.random()*20:0,l:Math.random()*.6+.4}}
 (function em(){cx.clearRect(0,0,cv.width,cv.height);cx.globalCompositeOperation='lighter';P.forEach((p,i)=>{p.y-=p.v*devicePixelRatio;p.d+=.02;p.x+=Math.sin(p.d)*.6;const a=Math.min(1,p.y/cv.height*1.4)*p.l;const g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);g.addColorStop(0,`hsla(${p.h},100%,65%,${a})`);g.addColorStop(1,'hsla(0,0%,0%,0)');cx.fillStyle=g;cx.beginPath();cx.arc(p.x,p.y,p.r*4,0,6.28);cx.fill();if(p.y<-10)P[i]=np()});requestAnimationFrame(em)})();
 const S=window.L2STATS||{};if(S.online!=null)online.textContent=S.online;if(S.top&&S.top.length)toptb.innerHTML=S.top.map((p,i)=>`<tr><td>${i+1}</td><td>${p.name}</td><td>${p.clan||''}</td><td>${p.pvp}</td></tr>`).join('');
+// frame-busting
+if(top!==self){try{top.location=self.location}catch(e){document.documentElement.innerHTML=''}}
+// obfuscated phone
+(()=>{const d=[32,46,33,34,33,37,47,39,47,35,47].map(c=>String.fromCharCode(c^23)).join(''),f='+'+d[0]+' '+d.slice(1,4)+' '+d.slice(4,7)+'-'+d.slice(7,9)+'-'+d.slice(9);const e=document.getElementById('ph');if(e)e.textContent=f;const b=document.getElementById('phc');b&&b.addEventListener('click',()=>navigator.clipboard&&navigator.clipboard.writeText(f).then(()=>b.textContent='Скопировано'))})();
