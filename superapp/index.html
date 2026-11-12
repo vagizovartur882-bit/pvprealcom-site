@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>СуперАпп — чаты, музыка, общение</title>
+  <meta name="description" content="Мессенджер, социальная сеть и музыкальный плеер в одном приложении.">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="СуперАпп">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap&subset=cyrillic" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000;
+      --text: #f3f3f3;
+      --muted: #8d8d8d;
+      --dim: #5a5a5a;
+      --line: #1e1e1e;
+      --line-2: #2a2a2a;
+      --chip: #141414;
+      --accent: #c98412;
+      --white: #f5f5f5;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); color: var(--text); }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+    button, a { font-family: inherit; }
+    .label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    header {
+      height: calc(56px + var(--safe-t));
+      padding: var(--safe-t) 28px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: #000;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: block;
+    }
+    .brand span {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #cfcfcf;
+    }
+    .status i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #d6b056;
+      box-shadow: 0 0 0 3px rgba(214, 176, 86, 0.16);
+      display: block;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100dvh - 56px - var(--safe-t));
+    }
+    .left, .right {
+      padding: 64px 72px 72px;
+    }
+    .left { border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+    .eyebrow { margin-bottom: 22px; }
+    h1 {
+      font-size: clamp(40px, 5.4vw, 68px);
+      font-weight: 400;
+      letter-spacing: -0.045em;
+      line-height: 1.02;
+      margin-bottom: 22px;
+    }
+    .lead {
+      max-width: 26em;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 48px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--line-2);
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      border-radius: 2px;
+    }
+    .chip em {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: block;
+      flex: none;
+    }
+    .chip.is-on {
+      background: var(--white);
+      color: #111;
+      border-color: var(--white);
+      font-weight: 500;
+    }
+    .chip.is-on em { background: #111; }
+    .install { margin-top: auto; }
+    .install .label { margin-bottom: 14px; display: block; }
+    .actions { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      padding: 0 20px;
+      border-radius: 2px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+      letter-spacing: 0.01em;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-white { background: var(--white); color: #111; }
+    .btn-ghost { background: transparent; color: var(--text); border-color: var(--line-2); }
+    .btn-ghost:hover { opacity: 1; background: #111; }
+    .note {
+      margin-top: 16px;
+      color: var(--dim);
+      font-size: 12px;
+    }
+    .right {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 28px;
+    }
+    .panel-head .time { color: var(--dim); font-size: 11px; letter-spacing: 0.08em; }
+    .device-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .device {
+      width: 100%;
+      max-width: 380px;
+      border: 1px solid var(--line-2);
+      background: #050505;
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+    .device-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .device-top img { width: 40px; height: 40px; border-radius: 10px; }
+    .device-top strong { display: block; font-weight: 500; font-size: 15px; letter-spacing: -0.02em; }
+    .device-top small { color: var(--muted); font-size: 12px; }
+    .chats { padding: 18px 18px 8px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+    .msg { max-width: 82%; }
+    .msg .who { font-size: 11px; color: var(--dim); margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .msg p {
+      border: 1px solid var(--line-2);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: #e8e8e8;
+    }
+    .msg.me { align-self: flex-end; }
+    .msg.me p { background: #f5f5f5; color: #111; border-color: #f5f5f5; }
+    .player {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      padding: 16px 18px 18px;
+    }
+    .player .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .player .title { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+    .player .t { font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+    .bar { height: 2px; background: #1c1c1c; position: relative; margin-bottom: 14px; }
+    .bar span { position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: #f0f0f0; }
+    .controls { display: flex; align-items: center; gap: 16px; }
+    .controls button {
+      width: 36px; height: 36px;
+      border: 1px solid var(--line-2);
+      background: transparent;
+      color: var(--text);
+      display: grid; place-items: center;
+      cursor: default;
+      border-radius: 2px;
+    }
+    .controls button.play { background: var(--white); color: #111; border-color: var(--white); width: 42px; }
+    .eq {
+      margin-left: auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      height: 28px;
+    }
+    .eq i {
+      width: 2px;
+      background: #4a4a4a;
+      display: block;
+      height: var(--h);
+    }
+    .how {
+      border-top: 1px solid var(--line);
+      padding: 64px 72px 80px;
+      padding-bottom: calc(80px + var(--safe-b));
+    }
+    .how h2 {
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      margin: 10px 0 36px;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .step {
+      border: 1px solid var(--line-2);
+      padding: 22px 22px 24px;
+      min-height: 160px;
+    }
+    .step .n {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .step p { color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+    .android-note { margin-top: 40px; max-width: 42em; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+    .android-note strong { color: var(--text); font-weight: 500; }
+    .ios-banner {
+      display: none;
+      position: fixed;
+      left: 12px; right: 12px;
+      bottom: calc(12px + var(--safe-b));
+      background: #111;
+      border: 1px solid var(--line-2);
+      padding: 14px 16px;
+      z-index: 20;
+      align-items: center;
+      gap: 12px;
+    }
+    .ios-banner.show { display: flex; }
+    .ios-banner img { width: 36px; height: 36px; border-radius: 9px; }
+    .ios-banner p { font-size: 13px; line-height: 1.4; flex: 1; }
+    .ios-banner p span { color: var(--muted); }
+    .ios-banner button {
+      background: none; border: 0; color: var(--muted); font-size: 18px;
+      padding: 4px 6px; cursor: pointer;
+    }
+    @media (max-width: 960px) {
+      .left, .right, .how { padding: 40px 24px 48px; }
+      .stage { grid-template-columns: 1fr; }
+      .left { border-right: 0; border-bottom: 1px solid var(--line); min-height: auto; }
+      .steps { grid-template-columns: 1fr; }
+      .device { min-height: 460px; }
+      h1 { font-size: 42px; }
+      header { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="./">
+      <img src="icons/icon-256.png" alt="">
+      <span>СуперАпп</span>
+    </a>
+    <div class="status"><i></i> Готово к установке</div>
+  </header>
+
+  <section class="stage">
+    <div class="left">
+      <div class="label eyebrow">Приложение</div>
+      <h1>Чаты, музыка,<br>общение.</h1>
+      <p class="lead">Мессенджер, социальная сеть и музыкальный плеер в одном приложении. Тёмный интерфейс, без лишнего шума.</p>
+      <div class="chips">
+        <span class="chip is-on">Чаты</span>
+        <span class="chip"><em></em>Музыка</span>
+        <span class="chip"><em></em>Лента</span>
+        <span class="chip"><em></em>Звонки</span>
+      </div>
+      <div class="install">
+        <span class="label">Установка</span>
+        <div class="actions">
+          <a class="btn btn-white" href="#android">Скачать для Android</a>
+          <a class="btn btn-ghost" href="#iphone">Установить на iPhone</a>
+        </div>
+        <p class="note">Для iPhone — через Safari, на экран «Домой».</p>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="panel-head">
+        <span class="label">Сейчас в приложении</span>
+        <span class="time">СуперАпп</span>
+      </div>
+      <div class="device-wrap">
+        <div class="device">
+          <div class="device-top">
+            <img src="icons/icon-256.png" alt="">
+            <div>
+              <strong>СуперАпп</strong>
+              <small>чаты · музыка · общение</small>
+            </div>
+          </div>
+          <div class="chats">
+            <div class="msg">
+              <div class="who">Аня</div>
+              <p>Ты уже поставил? Иконка очень красивая.</p>
+            </div>
+            <div class="msg me">
+              <div class="who" style="text-align:right">Вы</div>
+              <p>Да, на домашний экран — как обычное приложение.</p>
+            </div>
+            <div class="msg">
+              <div class="who">Макс</div>
+              <p>И музыка здесь же. Удобно.</p>
+            </div>
+          </div>
+          <div class="player">
+            <div class="row">
+              <div>
+                <div class="label" style="margin-bottom:6px">Сейчас играет</div>
+                <div class="title">Ночной город</div>
+              </div>
+              <div class="t">2:14 / 3:40</div>
+            </div>
+            <div class="bar"><span></span></div>
+            <div class="controls">
+              <button aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M11 2v8L4.5 6 11 2zM3 2v8H1V2h2z"/></svg>
+              </button>
+              <button class="play" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.8v8.4L11 6 3 1.8z"/></svg>
+              </button>
+              <button aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M1 2v8l6.5-4L1 2zM9 2h2v8H9V2z"/></svg>
+              </button>
+              <div class="eq" aria-hidden="true">
+                <i style="--h:10px"></i><i style="--h:22px"></i><i style="--h:14px"></i><i style="--h:26px"></i><i style="--h:12px"></i><i style="--h:18px"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="iphone">
+    <span class="label">iPhone</span>
+    <h2>Как установить на айфон</h2>
+    <div class="steps">
+      <article class="step">
+        <div class="n">01</div>
+        <h3>Открой в Safari</h3>
+        <p>Зайди на эту страницу именно в Safari. В Chrome и других браузерах пункта установки может не быть.</p>
+      </article>
+      <article class="step">
+        <div class="n">02</div>
+        <h3>Нажми «Поделиться»</h3>
+        <p>Кнопка внизу экрана: квадрат со стрелкой вверх.</p>
+      </article>
+      <article class="step">
+        <div class="n">03</div>
+        <h3>«На экран Домой»</h3>
+        <p>Выбери этот пункт, нажми «Добавить». На рабочем столе появится значок СуперАпп — чёрный, с белым чатом.</p>
+      </article>
+    </div>
+    <p class="android-note" id="android"><strong>Android.</strong> Скачай APK и открой файл на телефоне. Если система спросит разрешение на установку из этого источника — разреши, это обычный шаг для приложений вне Google Play.</p>
+  </section>
+
+  <div class="ios-banner" id="iosBanner">
+    <img src="icons/icon-256.png" alt="">
+    <p>Добавить на экран «Домой»<br><span>Нажми «Поделиться», затем этот пункт.</span></p>
+    <button type="button" id="iosClose" aria-label="Закрыть">×</button>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+    (function () {
+      var ua = navigator.userAgent || '';
+      var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      var banner = document.getElementById('iosBanner');
+      if (ios && !standalone && sessionStorage.getItem('iosBannerOff') !== '1') {
+        banner.classList.add('show');
+        document.querySelector('.how').style.paddingBottom = '120px';
+      }
+      document.getElementById('iosClose').addEventListener('click', function () {
+        banner.classList.remove('show');
+        sessionStorage.setItem('iosBannerOff', '1');
+      });
+    })();
+  </script>
+</body>
+</html>
