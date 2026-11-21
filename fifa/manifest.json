@@ -1,0 +1,21 @@
+{
+  "id": "/pvprealcom-site/fifa/",
+  "name": "Кубок FIFA PS5",
+  "short_name": "Кубок FIFA",
+  "description": "Однодневный турнир EA FC в PlayStation-клубе: запись, жеребьёвка и сетка.",
+  "lang": "ru",
+  "start_url": "/pvprealcom-site/fifa/",
+  "scope": "/pvprealcom-site/fifa/",
+  "display": "standalone",
+  "display_override": ["standalone", "browser"],
+  "orientation": "any",
+  "background_color": "#07080f",
+  "theme_color": "#07080f",
+  "categories": ["sports", "games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,2 @@
+LZ-String 1.5.0 — MIT, pieroxy. Vendored for offline share links.
+QR Code Generator for JavaScript — MIT, Kazuhiko Arase. Vendored, no runtime CDN.
