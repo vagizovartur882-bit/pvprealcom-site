@@ -1,9 +1,10 @@
 /* Service worker scoped to /pvprealcom-site/fifa/ (the script lives in that folder). */
-var CACHE = "fifa-ps5-cup-v1";
+var CACHE = "fifa-ps5-cup-v2";
 var ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
+  "./fc.css",
   "./app.js",
   "./bracket.js",
   "./config.js",
@@ -11,6 +12,10 @@ var ASSETS = [
   "./manifest.json",
   "./vendor/lz-string.min.js",
   "./vendor/qrcode-generator.js",
+  "./img/stadium.webp",
+  "./fonts/oswald-cyrillic-500.woff2",
+  "./fonts/oswald-cyrillic-600.woff2",
+  "./fonts/oswald-cyrillic-700.woff2",
   "./fonts/unbounded-500.woff2",
   "./fonts/unbounded-700.woff2",
   "./fonts/manrope-400.woff2",

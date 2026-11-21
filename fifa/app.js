@@ -48,6 +48,8 @@
   var animating = false;
   var drawToken = 0;
   var deferredPrompt = null;
+  var soundOn = false;
+  try { soundOn = localStorage.getItem("fifa-sound") === "1"; } catch (e) {}
   var toastTimer = 0;
   var confettiTimer = 0;
   var confettiOn = false;
@@ -105,6 +107,33 @@
       return buf[0] / 4294967296;
     }
     return Math.random();
+  }
+
+  function seedOvr(club) {
+    if (!club) return "—";
+    if (club.pot === 1) return 93 - club.id;
+    return 84 - (club.id - 16);
+  }
+
+  function blip() {
+    if (!soundOn) return;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!blip.ctx) blip.ctx = new Ctx();
+      var ctx = blip.ctx;
+      if (ctx.state === "suspended") ctx.resume();
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = "square";
+      o.frequency.value = 720;
+      g.gain.setValueAtTime(0.028, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.045);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.05);
+    } catch (err) {}
   }
 
   function crestInk(hex) {
@@ -288,11 +317,15 @@
     document.body.dataset.readonly = readOnly ? "1" : "0";
     document.body.dataset.organizer = organizer ? "1" : "0";
     document.body.dataset.champion = championReady() ? "1" : "0";
+    document.body.dataset.sound = soundOn ? "1" : "0";
     document.getElementById("header").innerHTML = headerHTML();
     document.getElementById("nav").innerHTML = navHTML();
     var main = document.getElementById("app");
     var prev = main.scrollTop;
     main.innerHTML = mainHTML();
+    main.classList.remove("screen-in");
+    void main.offsetWidth;
+    main.classList.add("screen-in");
     main.scrollTop = prev;
     document.getElementById("overlay").innerHTML = modal ? modalHTML() : "";
     if (screen === "podium" && championReady()) startConfetti();
@@ -313,6 +346,7 @@
       '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9h16v-9a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm-3 7V7a3 3 0 016 0v2H9z"/></svg></button>';
     return '<div class="brand"><div class="brand-mark">' + trophySVG("trophy-svg") + "</div><div><strong>Кубок FIFA PS5</strong><small>PlayStation клуб · 32 игрока</small></div></div>" +
       '<div class="head-actions">' +
+      '<button type="button" class="icon-btn' + (soundOn ? " on" : "") + '" data-act="toggle-sound" aria-label="Звук" aria-pressed="' + (soundOn ? "true" : "false") + '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3 9v6h4l5 4V5L7 9H3z"/><path fill="none" stroke="currentColor" stroke-width="2" d="' + (soundOn ? "M16 8a5 5 0 010 8" : "M16 9l5 6M21 9l-5 6") + '"/></svg></button>' +
       '<button type="button" class="icon-btn" data-act="open-share" aria-label="Поделиться сеткой"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M14 4l7 7-7 7v-4H9c-4 0-7 2-8 6 1-6 4-9 8-9h5V4z"/></svg></button>' +
       '<button type="button" class="icon-btn" data-act="open-install" aria-label="Установить"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5z"/></svg></button>' +
       org + cup + "</div>";
@@ -341,8 +375,9 @@
   function tournamentsHTML() {
     var t = activeTournament();
     var html = banner();
-    html += '<p class="eyebrow">Турниры</p><h1 class="gold-title">Запись на кубок</h1>';
-    html += '<p class="lead">Первые три турнира — наличные в клубе. Следующие — запись заранее и перевод.</p>';
+    html += '<p class="eyebrow">Главное меню</p><h1 class="gold-title">Кубок</h1>';
+    html += '<p class="lead">Ночной турнир. Первые три кубка — наличные в клубе, дальше — предоплата.</p>';
+    html += menuTiles();
     if (organizer && configPlaceholder()) {
       html += '<p class="warn">В config.js всё ещё стоят заглушки: PIN, СБП, карта и Telegram. Замените их до турнира.</p>';
     }
@@ -363,6 +398,19 @@
     if (organizer) html += adminHTML(t);
     else if (!readOnly) html += '<p class="muted">Список игроков и оплаты открываются в режиме организатора.</p>';
     return html;
+  }
+
+  function menuTiles() {
+    var tiles = [
+      ["players", "Жеребьёвка", "32 игрока"],
+      ["bracket", "Сетка", "Плей-офф"],
+      ["schedule", "Расписание", "12:00–17:15"],
+      ["rules", "Призы", "16 · 10 · 6"],
+      ["podium", "Кубок", championReady() ? "Чемпион есть" : "Подиум"]
+    ];
+    return '<div class="menu-grid">' + tiles.map(function (tile) {
+      return '<button type="button" class="menu-tile" data-act="goto" data-screen="' + tile[0] + '"><span>' + tile[1] + "</span><small>" + tile[2] + "</small></button>";
+    }).join("") + "</div>";
   }
 
   function heroCard(t, big) {
@@ -445,13 +493,14 @@
     return html + "</div>";
   }
 
+  function futCard(player, pot) {
+    var club = B.club(player.clubId);
+    return '<div class="fut" data-pot="' + pot + '"><div class="fut-top"><b class="fut-ovr">' + seedOvr(club) + '</b><span>К' + pot + '</span></div>' +
+      crestHTML(club) + '<b class="fut-name">' + esc(player.name) + "</b><small>" + esc(club.name) + "</small></div>";
+  }
+
   function pairHTML(home, away, i) {
-    var c1 = B.club(home.clubId);
-    var c2 = B.club(away.clubId);
-    return '<div class="pair" data-pair="' + i + '"><span class="idx">' + (i + 1) + "</span>" +
-      '<div class="who" data-pot="1">' + crestHTML(c1) + "<b>" + esc(home.name) + "</b><small>" + esc(c1.name) + "</small></div>" +
-      '<span class="vs">VS</span>' +
-      '<div class="who" data-pot="2">' + crestHTML(c2) + "<b>" + esc(away.name) + "</b><small>" + esc(c2.name) + "</small></div></div>";
+    return '<div class="pair" data-pair="' + i + '">' + futCard(home, 1) + '<span class="vs">VS</span>' + futCard(away, 2) + "</div>";
   }
 
   function bracketHTML() {
@@ -509,7 +558,7 @@
     var a = state.players ? B.sidePlayer(state.players, state.matches, m, 1) : null;
     var w = state.players ? B.matchWinnerSide(state.players, state.matches, m) : null;
     var p = phase(m);
-    return '<button type="button" class="mcard ' + p + '" data-act="open-match" data-open-match="' + m.id + '" data-id="' + m.id + '" data-legs="' + m.legs + '" data-phase="' + p + '" data-score="' + esc(scoreText(m)) + '">' +
+    return '<button type="button" class="mcard fixture ' + p + '" data-act="open-match" data-open-match="' + m.id + '" data-id="' + m.id + '" data-legs="' + m.legs + '" data-phase="' + p + '" data-score="' + esc(scoreText(m)) + '">' +
       "<header><span>" + esc(roundName(m.round)) + " · матч " + (m.index + 1) + (m.wave2 ? " · II волна" : "") + "</span><span>" + esc(phaseText(m)) + "</span></header>" +
       '<div class="versus">' + sideBlock(h, w, 0) + '<div class="score">' + esc(scoreText(m)) + "</div>" + sideBlock(a, w, 1) + "</div>" +
       (m.legs === 2 ? '<div class="bmeta">' + legLine(m) + "</div>" : "") +
@@ -638,7 +687,7 @@
         '<div class="stand"><div class="eyebrow">' + caption + "</div><b>" + money(sum) + "</b></div></div>";
     }
     return '<div class="podium-screen">' + banner() + trophySVG("trophy-svg hero-trophy") +
-      '<p class="eyebrow">Чемпион дня</p><h1 class="gold-title">' + esc(p.first.name) + "</h1>" +
+      '<p class="eyebrow">Чемпион дня</p><h1 class="gold-title champ-name">' + esc(p.first.name) + "</h1>" +
       '<p class="muted">' + esc(B.club(p.first.clubId).name) + " · " + esc(t.title) + "</p>" +
       '<div class="podium-row">' +
       card(2, p.second, t.prizes[1], "p2", "2 место") +
@@ -1199,6 +1248,14 @@
     }
     if (animating) return;
     var act = el.dataset.act;
+    if (act === "toggle-sound") {
+      soundOn = !soundOn;
+      try { localStorage.setItem("fifa-sound", soundOn ? "1" : "0"); } catch (err) {}
+      render();
+      if (soundOn) blip();
+      return;
+    }
+    blip();
     if (act === "goto") { screen = el.dataset.screen; render(); return; }
     if (act === "close") { modal = null; render(); return; }
     if (act === "open-install") { modal = { type: "install" }; localStorage.setItem("fifa-install-hide", "1"); render(); return; }
@@ -1499,6 +1556,38 @@
     tick();
   }
 
+  function startDust() {
+    var canvas = document.getElementById("dust");
+    if (!canvas || startDust.started) return;
+    startDust.started = true;
+    if (reduceMotion) return;
+    var ctx = canvas.getContext("2d");
+    var dots = [];
+    function fit() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    fit();
+    window.addEventListener("resize", fit);
+    for (var i = 0; i < 36; i++) {
+      dots.push({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.8, v: 0.00025 + Math.random() * 0.0007, p: Math.random() * 6 });
+    }
+    function tick() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      dots.forEach(function (d) {
+        d.y -= d.v;
+        d.p += 0.02;
+        if (d.y < 0) d.y = 1;
+        ctx.fillStyle = "rgba(210,255,230," + (0.12 + Math.sin(d.p) * 0.08) + ")";
+        ctx.beginPath();
+        ctx.arc(d.x * canvas.width, d.y * canvas.height, d.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
   function stopConfetti() {
     confettiOn = false;
     cancelAnimationFrame(confettiTimer);
@@ -1581,6 +1670,7 @@
     if (lastReady) screen = "podium";
     else if (state.players) screen = readOnly ? "bracket" : "tournaments";
     render();
+    startDust();
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js", { scope: "/pvprealcom-site/fifa/" }).catch(function () {});
     }
