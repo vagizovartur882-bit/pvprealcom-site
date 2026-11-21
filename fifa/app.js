@@ -30,11 +30,11 @@
   ];
 
   var TABS = [
-    ["tournaments", "★", "Турниры"],
-    ["players", "◎", "Жеребьёвка"],
-    ["bracket", "▦", "Сетка"],
-    ["schedule", "◷", "Расписание"],
-    ["rules", "✦", "Правила"]
+    ["tournaments", "home", "Турниры"],
+    ["players", "draw", "Жеребьёвка"],
+    ["bracket", "grid", "Сетка"],
+    ["schedule", "clock", "Расписание"],
+    ["rules", "prize", "Правила"]
   ];
 
   var readOnly = false;
@@ -322,11 +322,16 @@
     document.getElementById("nav").innerHTML = navHTML();
     var main = document.getElementById("app");
     var prev = main.scrollTop;
+    var entered = render.screen !== screen;
+    render.screen = screen;
     main.innerHTML = mainHTML();
     main.classList.remove("screen-in");
-    void main.offsetWidth;
-    main.classList.add("screen-in");
+    if (entered && window.matchMedia("(min-width: 1100px) and (hover: hover) and (prefers-reduced-motion: no-preference)").matches) {
+      void main.offsetWidth;
+      main.classList.add("screen-in");
+    }
     main.scrollTop = prev;
+    armCountdown();
     document.getElementById("overlay").innerHTML = modal ? modalHTML() : "";
     if (screen === "podium" && championReady()) startConfetti();
     else stopConfetti();
@@ -352,9 +357,20 @@
       org + cup + "</div>";
   }
 
+  function tabIcon(name) {
+    var paths = {
+      home: '<path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-5v-5H10v5H5a1 1 0 01-1-1v-8z"/>',
+      draw: '<path d="M4 6h16v3H4zM4 15h16v3H4zM8 6v12M16 6v12"/>',
+      grid: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
+      clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/>',
+      prize: '<path d="M7 4h10v3a5 5 0 01-10 0V4zM7 5H4a3 3 0 003 4M17 5h3a3 3 0 01-3 4M10 12h4v3h-4zM8 18h8"/>'
+    };
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">' + (paths[name] || paths.home) + "</g></svg>";
+  }
+
   function navHTML() {
     return TABS.map(function (tab) {
-      return '<button type="button" class="tab' + (screen === tab[0] ? " on" : "") + '" data-act="goto" data-screen="' + tab[0] + '"><span>' + tab[1] + "</span>" + tab[2] + "</button>";
+      return '<button type="button" class="tab' + (screen === tab[0] ? " on" : "") + '" data-act="goto" data-screen="' + tab[0] + '"><span class="tab-ico">' + tabIcon(tab[1]) + "</span>" + tab[2] + "</button>";
     }).join("");
   }
 
@@ -375,8 +391,11 @@
   function tournamentsHTML() {
     var t = activeTournament();
     var html = banner();
-    html += '<p class="eyebrow">Главное меню</p><h1 class="gold-title">Кубок</h1>';
-    html += '<p class="lead">Ночной турнир. Первые три кубка — наличные в клубе, дальше — предоплата.</p>';
+    html += '<p class="eyebrow">' + esc(formatDate(t.date)) + " · " + esc(t.time) + "</p>";
+    html += '<h1 class="gold-title">' + esc(t.title) + "</h1>";
+    html += '<p class="lead">Ночной турнир на 32 игрока. Первые три кубка — наличные в клубе.</p>';
+    html += '<div class="hero-stats"><div><span class="stat-label">Банк</span><b class="stat-num">' + money(t.fee * 32) + '</b></div>' +
+      '<div><span class="stat-label">До старта</span><b class="stat-num" id="count" data-at="' + esc(t.date) + "T" + esc(t.time) + ':00">—</b></div></div>';
     html += menuTiles();
     if (organizer && configPlaceholder()) {
       html += '<p class="warn">В config.js всё ещё стоят заглушки: PIN, СБП, карта и Telegram. Замените их до турнира.</p>';
@@ -834,8 +853,7 @@
     for (var i = 0; i < m.legs; i++) {
       var s = m.scores[i] || { h: null, a: null };
       html += "<label>" + (m.legs === 2 ? ("Матч " + (i + 1)) : "Счёт") + "</label>";
-      html += '<div class="score-row"><input class="score-input" inputmode="numeric" data-leg="' + i + '" data-side="h" value="' + (s.h == null ? "" : s.h) + '"' + (readOnly ? " readonly" : "") + ">" +
-        "<span>:</span><input class=\"score-input\" inputmode=\"numeric\" data-leg=\"" + i + "\" data-side=\"a\" value=\"" + (s.a == null ? "" : s.a) + "\"" + (readOnly ? " readonly" : "") + "></div>";
+      html += '<div class="score-row">' + stepper(i, "h", s.h, readOnly) + "<span>:</span>" + stepper(i, "a", s.a, readOnly) + "</div>";
     }
     html += '<p id="agg" class="muted"></p>';
     if (!readOnly) {
@@ -956,7 +974,7 @@
     for (i = 4; i < 8; i++) d += link("r16-" + i, "qf-" + Math.floor(i / 2), "left", "right");
     for (i = 2; i < 4; i++) d += link("qf-" + i, "sf-" + Math.floor(i / 2), "left", "right");
     d += link("sf-1", "f-0", "left", "right");
-    svg.innerHTML = '<path d="' + d + '" fill="none" stroke="rgba(232,197,107,0.6)" stroke-width="2"/>';
+    svg.innerHTML = '<path d="' + d + '" fill="none" stroke="#00FF87" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   }
 
   function sleep(ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); }
@@ -1043,8 +1061,8 @@
     var legs = Number(form.dataset.legs);
     var scores = [];
     for (var i = 0; i < legs; i++) {
-      var h = parseGoalInput(form.querySelector('[data-leg="' + i + '"][data-side="h"]').value);
-      var a = parseGoalInput(form.querySelector('[data-leg="' + i + '"][data-side="a"]').value);
+      var h = parseGoalInput(form.querySelector('input[data-leg="' + i + '"][data-side="h"]').value);
+      var a = parseGoalInput(form.querySelector('input[data-leg="' + i + '"][data-side="a"]').value);
       if (Number.isNaN(h) || Number.isNaN(a)) {
         var err = document.getElementById("form-error");
         if (err) err.textContent = "Счёт — целое число от 0 до 30";
@@ -1248,6 +1266,18 @@
     }
     if (animating) return;
     var act = el.dataset.act;
+    if (act === "step") {
+      var box = document.querySelector('#match-form input[data-leg="' + el.dataset.leg + '"][data-side="' + el.dataset.side + '"]');
+      if (!box || box.readOnly) return;
+      var cur = parseInt(box.value, 10);
+      if (isNaN(cur)) cur = 0;
+      cur += Number(el.dataset.dir);
+      if (cur < 0) cur = 0;
+      if (cur > 30) cur = 30;
+      box.value = String(cur);
+      updateAgg();
+      return;
+    }
     if (act === "toggle-sound") {
       soundOn = !soundOn;
       try { localStorage.setItem("fifa-sound", soundOn ? "1" : "0"); } catch (err) {}
@@ -1428,8 +1458,8 @@
       var form3 = document.getElementById("match-form");
       var legs = Number(form3.dataset.legs);
       for (var i = 0; i < legs; i++) {
-        var hv = form3.querySelector('[data-leg="' + i + '"][data-side="h"]');
-        var av = form3.querySelector('[data-leg="' + i + '"][data-side="a"]');
+        var hv = form3.querySelector('input[data-leg="' + i + '"][data-side="h"]');
+        var av = form3.querySelector('input[data-leg="' + i + '"][data-side="a"]');
         if (i === 0) {
           hv.value = el.dataset.lose === "h" ? "0" : "3";
           av.value = el.dataset.lose === "h" ? "3" : "0";
@@ -1476,8 +1506,8 @@
     var legs = Number(form.dataset.legs);
     var h = 0; var a = 0; var ok = true;
     for (var i = 0; i < legs; i++) {
-      var hv = parseGoalInput(form.querySelector('[data-leg="' + i + '"][data-side="h"]').value);
-      var av = parseGoalInput(form.querySelector('[data-leg="' + i + '"][data-side="a"]').value);
+      var hv = parseGoalInput(form.querySelector('input[data-leg="' + i + '"][data-side="h"]').value);
+      var av = parseGoalInput(form.querySelector('input[data-leg="' + i + '"][data-side="a"]').value);
       if (hv == null || av == null || Number.isNaN(hv) || Number.isNaN(av)) ok = false;
       else { h += hv; a += av; }
     }
@@ -1556,7 +1586,37 @@
     tick();
   }
 
+  function stepper(leg, side, value, locked) {
+    var shown = value == null ? "" : value;
+    return '<div class="stepper"><button type="button" data-act="step" data-leg="' + leg + '" data-side="' + side + '" data-dir="-1" aria-label="Меньше"' + (locked ? " disabled" : "") + ">−</button>" +
+      '<input class="score-input" inputmode="numeric" data-leg="' + leg + '" data-side="' + side + '" value="' + shown + '"' + (locked ? " readonly" : "") + ">" +
+      '<button type="button" data-act="step" data-leg="' + leg + '" data-side="' + side + '" data-dir="1" aria-label="Больше"' + (locked ? " disabled" : "") + ">+</button></div>";
+  }
+
+  function paintCount() {
+    var el = document.getElementById("count");
+    if (!el) return;
+    var target = Date.parse(el.dataset.at);
+    if (!isFinite(target)) { el.textContent = "—"; return; }
+    var diff = target - Date.now();
+    if (diff <= 0) { el.textContent = "Сейчас"; return; }
+    var total = Math.floor(diff / 1000);
+    var days = Math.floor(total / 86400);
+    var hours = Math.floor((total % 86400) / 3600);
+    var mins = Math.floor((total % 3600) / 60);
+    var secs = total % 60;
+    function p(n) { return (n < 10 ? "0" : "") + n; }
+    el.textContent = (days ? days + "д " : "") + p(hours) + ":" + p(mins) + ":" + p(secs);
+  }
+
+  function armCountdown() {
+    clearInterval(armCountdown.timer);
+    paintCount();
+    armCountdown.timer = setInterval(paintCount, 1000);
+  }
+
   function startDust() {
+    return;
     var canvas = document.getElementById("dust");
     if (!canvas || startDust.started) return;
     startDust.started = true;

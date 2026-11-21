@@ -20,10 +20,12 @@
 </head>
 <body>
   <div class="pitch-bg" aria-hidden="true">
-    <img src="img/stadium.webp" alt="">
+    <picture>
+      <source media="(min-width: 900px)" srcset="img/stadium.webp">
+      <img src="img/stadium-mobile.webp" alt="" width="720" height="1280" decoding="async">
+    </picture>
     <div class="pitch-shade"></div>
     <div class="light-sweep"></div>
-    <canvas id="dust"></canvas>
   </div>
   <div class="ambient" aria-hidden="true"></div>
   <header id="header"></header>
