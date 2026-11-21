@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Кубок FIFA PS5 — турнир клуба</title>
   <meta name="description" content="Однодневный турнир EA FC на 32 игрока: запись, жеребьёвка, сетка и призы.">
-  <meta name="theme-color" content="#07080f">
+  <meta name="theme-color" content="#07140e">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -16,11 +16,16 @@
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="fc.css">
 </head>
 <body>
+  <div class="pitch-bg" aria-hidden="true">
+    <img src="img/stadium.webp" alt="">
+    <div class="pitch-shade"></div>
+    <div class="light-sweep"></div>
+    <canvas id="dust"></canvas>
+  </div>
   <div class="ambient" aria-hidden="true"></div>
-  <div class="glow glow-a" aria-hidden="true"></div>
-  <div class="glow glow-b" aria-hidden="true"></div>
   <header id="header"></header>
   <nav id="nav" class="tabbar" aria-label="Разделы"></nav>
   <main id="app"></main>
