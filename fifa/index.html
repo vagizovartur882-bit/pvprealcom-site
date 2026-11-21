@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Кубок FIFA PS5 — турнир клуба</title>
+  <meta name="description" content="Однодневный турнир EA FC на 32 игрока: запись, жеребьёвка, сетка и призы.">
+  <meta name="theme-color" content="#07080f">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Кубок FIFA PS5">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
+  <header id="header"></header>
+  <nav id="nav" class="tabbar" aria-label="Разделы"></nav>
+  <main id="app"></main>
+  <div id="overlay"></div>
+  <div id="toast" role="status"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <svg class="sprite" width="0" height="0" aria-hidden="true">
+    <defs>
+      <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff6d2"/>
+        <stop offset="0.45" stop-color="#e8c56b"/>
+        <stop offset="1" stop-color="#8a6428"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <noscript><p class="noscript">Для турнира нужен JavaScript.</p></noscript>
+  <script src="config.js"></script>
+  <script src="vendor/lz-string.min.js"></script>
+  <script src="vendor/qrcode-generator.js"></script>
+  <script src="data-port.js"></script>
+  <script src="bracket.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
