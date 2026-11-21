@@ -63,9 +63,26 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+html {
+  margin: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  background: #07110d;
+}
 body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100svh;
   min-height: 100dvh;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  background: var(--bg);
+  color: var(--ink);
   font-family: Manrope, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.45;
@@ -358,6 +375,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 10px 0 6px; }
 textarea, input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="url"], select {
   width: 100%;
+  max-width: 100%;
+  font-size: 16px;
   background: rgba(0,0,0,0.35);
   border: 1px solid rgba(232,197,107,0.28);
   border-radius: 12px;
