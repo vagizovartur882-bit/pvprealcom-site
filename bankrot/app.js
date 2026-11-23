@@ -3,10 +3,18 @@
 
   var toggle = document.getElementById("nav-toggle");
   var burger = document.querySelector(".burger");
+  var nav = document.querySelector(".site-nav");
+
+  var updateNav = function () {
+    if (!nav) return;
+    var open = toggle && toggle.checked;
+    nav.classList.toggle("is-solid", open || window.scrollY > 8);
+  };
 
   if (toggle && burger) {
     var syncMenu = function () {
       burger.setAttribute("aria-expanded", toggle.checked ? "true" : "false");
+      updateNav();
     };
 
     syncMenu();
@@ -33,6 +41,9 @@
       syncMenu();
     });
   }
+
+  updateNav();
+  window.addEventListener("scroll", updateNav, { passive: true });
 
   var dock = document.querySelector(".dock");
   var heroPeople = document.getElementById("hero-people");
